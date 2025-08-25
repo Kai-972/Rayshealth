@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Health & Wellness Design System - Inspired by Ray's Healthy Living 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 8.9% 46.1%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 8.9% 46.1%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 8.9% 46.1%;
+
+    /* Brand Orange - Main CTA color */
+    --primary: 24 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 24 100% 55%;
+
+    /* Health Green - Secondary brand color */
+    --secondary: 90 50% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 90 50% 40%;
+
+    /* Accent Green - Navigation and highlights */
+    --accent: 100 60% 50%;
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 100 60% 45%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 24 100% 60%;
+
+    /* Health brand specific colors */
+    --header-orange: 24 100% 60%;
+    --nav-green: 100 35% 45%;
+    --success-green: 120 60% 50%;
+    --wellness-blue: 200 80% 60%;
+    
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
+    --gradient-health: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 27.3% 7.8%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 27.3% 7.8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 27.3% 7.8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 24 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 24 100% 65%;
+
+    --secondary: 90 50% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 90 50% 50%;
+
+    --accent: 100 60% 50%;
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 100 60% 55%;
+
+    --muted: 220 27.3% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 27.3% 15%;
+    --input: 220 27.3% 15%;
+    --ring: 24 100% 60%;
+
+    --header-orange: 24 100% 65%;
+    --nav-green: 100 35% 50%;
+    --success-green: 120 60% 55%;
+    --wellness-blue: 200 80% 65%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Custom animations */
+  .notch-cut {
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 100%, 20px 100%);
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-glow {
+    from {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    }
+    to {
+      box-shadow: 0 0 30px hsl(var(--primary) / 0.6);
+    }
+  }
+
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px hsl(var(--foreground) / 0.1);
+  }
+  /* share buttons */
+.share-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.share-btn {
+  width: 44px; height: 44px; border-radius: 9999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff; transition: all .2s ease; border: 2px solid currentColor;
+}
+.share-btn svg { width: 22px; height: 22px; color: currentColor; }
+.share-label { font-size: 1.25rem; font-weight: 600; margin-bottom: .5rem; }
+.fb { color: #4267B2; } .tw { color: #0F1419; } .li { color: #0A66C2; }
+.rd { color: #FF4500; } .pt { color: #E60023; } .tb { color: #36465D; } .wa { color: #25D366; }
+.share-btn:hover { color: #fff; }
+.fb:hover { background:#4267B2; } .tw:hover { background:#0F1419; } .li:hover { background:#0A66C2; }
+.rd:hover { background:#FF4500; } .pt:hover { background:#E60023; } .tb:hover { background:#36465D; } .wa:hover { background:#25D366; }
+
+}
