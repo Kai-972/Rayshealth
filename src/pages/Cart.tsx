@@ -3,17 +3,17 @@ import { useState, useMemo } from 'react';
 import { useCartStore } from '@/stores/cartStore';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
-import { Trash2, Loader2, AlertTriangle } from 'lucide-react';
+import { Trash2, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Header from '@/components/homepage/Header';
 import Footer from '@/components/homepage/Footer';
 import { Link } from 'react-router-dom';
 
 export default function CartPage() {
-  const { items, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCartStore();
+  const { items, removeFromCart, updateQuantity, getTotalPrice } = useCartStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoize the check for invalid items to avoid re-calculating on every render
+  // Check if any item in the cart is unavailable for checkout.
   const hasUnavailableItems = useMemo(() => {
     return items.some(item => !item.shopify_variant_id);
   }, [items]);
@@ -43,6 +43,7 @@ export default function CartPage() {
         body: { lineItems },
       });
       if (invokeError) throw invokeError;
+      // Redirect to Shopify's secure checkout page
       window.location.href = data.checkoutUrl;
     } catch (err: any) {
       console.error("Checkout Error:", err);
@@ -59,46 +60,49 @@ export default function CartPage() {
           <h1 className="text-3xl font-bold mb-8">Cart</h1>
           {items.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Cart Items */}
+              {/* Cart Items List */}
               <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow">
-                <div className="flow-root">
-                  <ul role="list" className="-my-6 divide-y divide-gray-200">
-                    {items.map((item) => (
-                      <li key={item.id} className="flex py-6">
-                        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                          <img src={item.image_url || 'https://placehold.co/96x96/orange/white?text=Item'} alt={item.name} className="h-full w-full object-cover object-center" />
-                        </div>
-                        <div className="ml-4 flex flex-1 flex-col">
-                          <div>
-                            <div className="flex justify-between text-base font-medium text-gray-900">
-                              <h3>{item.name}</h3>
-                              <p className="ml-4">${(item.price * item.quantity).toFixed(2)}</p>
-                            </div>
-                            {/* NEW: Availability Check */}
-                            {!item.shopify_variant_id && (
-                                <div className="mt-1 flex items-center text-xs text-yellow-600">
-                                    <AlertTriangle className="h-4 w-4 mr-1" />
-                                    <span>Not Available for Checkout</span>
-                                </div>
-                            )}
+                <ul role="list" className="divide-y divide-gray-200">
+                  {items.map((item) => (
+                    <li key={item.id} className="flex py-6">
+                      <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                        <img src={item.image_url || 'https://placehold.co/96x96/orange/white?text=Item'} alt={item.name} className="h-full w-full object-cover object-center" />
+                      </div>
+                      <div className="ml-4 flex flex-1 flex-col">
+                        <div>
+                          <div className="flex justify-between text-base font-medium text-gray-900">
+                            <h3>{item.name}</h3>
+                            <p className="ml-4">${(item.price * item.quantity).toFixed(2)}</p>
                           </div>
-                          <div className="flex flex-1 items-end justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                              <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</Button>
-                              <span>{item.quantity}</span>
-                              <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
+                          {/* AVAILABILITY STATUS */}
+                          {item.shopify_variant_id ? (
+                            <div className="mt-1 flex items-center text-xs text-green-600">
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              <span>Available for Checkout</span>
                             </div>
-                            <div className="flex">
-                              <Button variant="ghost" type="button" className="font-medium text-red-600 hover:text-red-500" onClick={() => removeFromCart(item.id)}>
-                                <Trash2 className="h-4 w-4 mr-1" /> Remove
-                              </Button>
+                          ) : (
+                            <div className="mt-1 flex items-center text-xs text-yellow-600">
+                              <AlertTriangle className="h-4 w-4 mr-1" />
+                              <span>Not Available for Checkout</span>
                             </div>
+                          )}
+                        </div>
+                        <div className="flex flex-1 items-end justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</Button>
+                            <span>{item.quantity}</span>
+                            <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
+                          </div>
+                          <div className="flex">
+                            <Button variant="ghost" type="button" className="font-medium text-red-600 hover:text-red-500" onClick={() => removeFromCart(item.id)}>
+                              <Trash2 className="h-4 w-4 mr-1" /> Remove
+                            </Button>
                           </div>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               {/* Order Summary */}
@@ -112,11 +116,10 @@ export default function CartPage() {
                 </div>
                 {error && <p className="mt-4 text-sm text-red-500 text-center">{error}</p>}
                 
-                {/* NEW: Conditional message */}
                 {hasUnavailableItems && (
-                    <p className="mt-4 text-sm text-yellow-700 bg-yellow-50 p-3 rounded-md text-center">
-                        Please remove unavailable items from your cart to proceed.
-                    </p>
+                  <p className="mt-4 text-sm text-yellow-700 bg-yellow-50 p-3 rounded-md text-center">
+                    Please remove unavailable items from your cart to proceed.
+                  </p>
                 )}
 
                 <div className="mt-6">
