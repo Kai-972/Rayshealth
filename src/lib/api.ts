@@ -106,3 +106,55 @@ export const fetchProducts = async (filters: ProductFilters) => {
 
   return { products: data, count };
 };
+
+
+export const fetchProductById = async (productId: string) => {
+  // FIXED: This query now correctly fetches the product's category
+  // through the 'product_categories' join table.
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      *,
+      brands ( name ),
+      product_categories ( categories ( id, name ) )
+    `)
+    .eq('id', productId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching product:", error);
+    throw new Error(error.message);
+  }
+  return data;
+};
+
+export const fetchRelatedProducts = async (categoryId: number | undefined, currentProductId: number) => {
+  if (!categoryId) return [];
+
+  // This query finds all product_ids linked to the same category
+  const { data: productLinks, error: linkError } = await supabase
+    .from('product_categories')
+    .select('product_id')
+    .eq('category_id', categoryId)
+    .neq('product_id', currentProductId) // Exclude the current product
+    .limit(4);
+
+  if (linkError || !productLinks) {
+    console.error("Error fetching related product links:", linkError);
+    return [];
+  }
+
+  const productIds = productLinks.map(p => p.product_id);
+
+  // Now fetch the details for those product IDs
+  const { data, error } = await supabase
+    .from('products')
+    .select(`*, brands ( name )`)
+    .in('id', productIds);
+  
+  if (error) {
+    console.error("Error fetching related products:", error);
+    return [];
+  }
+  return data;
+};

@@ -3,48 +3,79 @@ import { useState, useEffect } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchProducts, fetchFilterCategories, fetchFilterBrands } from '@/lib/api';
 import { useCartStore } from '@/stores/cartStore';
+import { Link } from 'react-router-dom';
 
+// Import UI Components
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Search, ChevronDown, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, SlidersHorizontal, Plus, Minus  } from 'lucide-react';
 
-interface Product {
-  id: number; name: string; description: string; price: number; upc: string;
-  image_url: string | null; brands: { id: number; name: string } | null;
-  categories: { id: number; name: string } | null; shopify_variant_id: string | null;
-}
 interface FilterItem { id: string; name: string; }
 
+const ProductCard = ({ product }) => {
+    const { items, addToCart, updateQuantity } = useCartStore();
+    const itemInCart = items.find(item => item.id === product.id);
+
+    return (
+        <article className="rounded-lg border border-neutral-200 bg-white hover:shadow-md transition group overflow-hidden flex flex-col">
+            <Link to={`/product/${product.id}`} className="flex flex-col flex-grow">
+                <div className="relative mx-auto mt-6 h-40 w-40">
+                    <img src={product.image_url || "/placeholder.png"} alt={product.name} className="h-full w-full object-contain" />
+                </div>
+                <div className="px-4 pt-4 flex-grow">
+                    <p className="text-xs text-neutral-500 uppercase tracking-wide">{product.brands?.name}</p>
+                    <h3 className="text-sm font-semibold leading-snug hover:text-orange-600 mt-1">{product.name}</h3>
+                    <div className="mt-2 text-sm font-semibold">${product.price}</div>
+                </div>
+            </Link>
+            <div className="px-4 py-4 mt-auto">
+                {itemInCart ? (
+                    <div className="flex items-center justify-center gap-2">
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(itemInCart.id, itemInCart.quantity - 1)}><Minus className="h-4 w-4" /></Button>
+                        <span className="text-lg font-semibold w-10 text-center">{itemInCart.quantity}</span>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(itemInCart.id, itemInCart.quantity + 1)}><Plus className="h-4 w-4" /></Button>
+                    </div>
+                ) : (
+                    <Button className="w-full rounded-full bg-orange-500 text-sm font-semibold text-white hover:bg-orange-600 transition" onClick={() => addToCart(product)}>
+                        Add to cart
+                    </Button>
+                )}
+            </div>
+        </article>
+    );
+};
+
+
 const FilterAccordion: React.FC<{
-  groupLabel: string; items: FilterItem[]; isLoading: boolean; onSelectionChange: (id: string) => void;
+    groupLabel: string; items: FilterItem[]; isLoading: boolean; onSelectionChange: (id: string) => void;
 }> = ({ groupLabel, items, isLoading, onSelectionChange }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  return (
-    <div className="border-t pt-4">
-      <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold uppercase">{groupLabel}</h4>
-        <button onClick={() => setIsOpen(!isOpen)} className="p-1 rounded hover:bg-neutral-100">
-          {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </button>
-      </div>
-      {isOpen && (
-        <ul className="mt-3 space-y-2 max-h-[280px] overflow-auto pr-1">
-          {isLoading ? <Skeleton className="h-20 w-full" /> : items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between gap-2">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <Checkbox onCheckedChange={() => onSelectionChange(item.id.toString())} />
-                <span className="text-neutral-700">{item.name}</span>
-              </label>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+    const [isOpen, setIsOpen] = useState(true);
+    return (
+        <div className="border-t pt-4">
+            <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold uppercase">{groupLabel}</h4>
+                <button onClick={() => setIsOpen(!isOpen)} className="p-1 rounded hover:bg-neutral-100">
+                    {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </button>
+            </div>
+            {isOpen && (
+                <ul className="mt-3 space-y-2 max-h-[280px] overflow-auto pr-1">
+                    {isLoading ? <Skeleton className="h-20 w-full" /> : items.map((item) => (
+                        <li key={item.id} className="flex items-center justify-between gap-2">
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                <Checkbox onCheckedChange={() => onSelectionChange(item.id.toString())} />
+                                <span className="text-neutral-700">{item.name}</span>
+                            </label>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
 };
 
 const ProductPage1 = () => {
@@ -62,12 +93,12 @@ const ProductPage1 = () => {
     const { data: categories, isLoading: isLoadingCategories } = useQuery({ queryKey: ['categories'], queryFn: fetchFilterCategories });
     const { data: brands, isLoading: isLoadingBrands } = useQuery({ queryKey: ['brands'], queryFn: fetchFilterBrands });
 
-    const { data, isLoading, error, isSuccess } = useQuery({ 
-        queryKey: ['products', { searchTerm, selectedCategories, selectedBrands, minPrice, maxPrice, sortBy, page }], 
-        queryFn: () => fetchProducts({ 
+    const { data, isLoading, error, isSuccess } = useQuery({
+        queryKey: ['products', { searchTerm, selectedCategories, selectedBrands, minPrice, maxPrice, sortBy, page }],
+        queryFn: () => fetchProducts({
             searchTerm, categories: selectedCategories, brands: selectedBrands,
             minPrice: Number(minPrice) || undefined, maxPrice: Number(maxPrice) || undefined,
-            sortBy, page, perPage: productsPerPage 
+            sortBy, page, perPage: productsPerPage
         }),
         placeholderData: keepPreviousData,
     });
@@ -79,7 +110,7 @@ const ProductPage1 = () => {
         }
     }, [data, isSuccess]);
 
-    const products: Product[] = data?.products || [];
+    const products = data?.products || [];
     const totalProducts = data?.count ?? 0;
     const totalPages = Math.ceil(totalProducts / productsPerPage);
 
@@ -138,17 +169,7 @@ const ProductPage1 = () => {
                                 <p className="text-red-500 col-span-full">Error loading products.</p>
                             ) : (
                                 products.map((p) => (
-                                    <article key={p.id} className="rounded-lg border border-neutral-200 bg-white hover:shadow-md transition group overflow-hidden flex flex-col">
-                                        <div className="relative mx-auto mt-6 h-40 w-40"><img src={p.image_url || "/placeholder.png"} alt={p.name} className="h-full w-full object-contain" /></div>
-                                        <div className="px-4 pt-4 flex-grow">
-                                            <p className="text-xs text-neutral-500 uppercase tracking-wide">{p.brands?.name}</p>
-                                            <h3 className="text-sm font-semibold leading-snug hover:text-orange-600 mt-1">{p.name}</h3>
-                                            <div className="mt-2 text-sm font-semibold">${p.price}</div>
-                                        </div>
-                                        <div className="px-4 py-4">
-                                            <Button className="w-full rounded-full bg-orange-500 text-sm font-semibold text-white hover:bg-orange-600 transition" onClick={() => addToCart(p)}>Add to cart</Button>
-                                        </div>
-                                    </article>
+                                    <ProductCard key={p.id} product={p} />
                                 ))
                             )}
                         </div>
@@ -166,8 +187,8 @@ const ProductPage1 = () => {
                         </div>
                     </section>
                 </div>
-            </div>
-        </main>
+            </div >
+        </main >
     );
 };
 

@@ -23,6 +23,8 @@ import LoginPage from "./pages/auth/Login";
 import CartPage from "./pages/Cart";
 import TestimonialPage from "./pages/Testimonials";
 import IrishMossKnowMore from "./components/homepage/headerComponents/IrishMossKnowMore";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +42,11 @@ const App = () => (
           <Route path="/blogpage3" element={<BlogPage3 />} />
           <Route path="/blogpage4" element={<BlogPage4 />} />
           <Route path="/blogpage5" element={<BlogPage5 />} />
-          <Route path="/products" element={<Products />} />
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/products" element={<Products />} />
+            <Route path="/product/:productId" element={<ProductDetailPage />} />
+          </Route>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/testimonials" element={<TestimonialPage />} />
@@ -48,7 +54,7 @@ const App = () => (
           {/* Header Components */}
           <Route path="/irish-moss/know-more" element={<IrishMossKnowMore />} />
 
-          {/* Blog Pages */}  
+          {/* Blog Pages */}
           <Route path="/the-ultimate-guide-to-natural-cardiovascular-wellness-beyond-supplements" element={<BP11 />} />
           <Route path="/unlocking-the-hidden-benefits-of-superfoods-for-heart-health" element={<BP12 />} />
           <Route path="/10-astonishing-vitamin-e-supplement-benefits/" element={<BP13 />} />
