@@ -1,93 +1,164 @@
 // src/stores/cartStore.ts
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware'; // To save cart in localStorage
+import { supabase } from '@/lib/supabaseClient';
+import { fetchDBCart, upsertDBCartItem, removeDBCartItem, clearDBCart } from '@/lib/api';
 
-// Define the shape of a product and a cart item
-// Ensure this matches the data you fetch from Supabase
+// Interfaces for Product and CartItem
 interface Product {
   id: number;
   name: string;
   price: number;
   image_url?: string;
-  // This is crucial for the checkout later
-  shopify_variant_id: string | null; 
+  shopify_variant_id: string | null;
 }
 
 interface CartItem extends Product {
   quantity: number;
 }
 
-// Define the shape of the store's state and actions
+// Store State and Actions
 interface CartState {
   items: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
-  clearCart: () => void;
+  isLoading: boolean;
+  error: string | null;
+  loadCart: () => Promise<void>;
+  addToCart: (product: Product, quantityToAdd?: number) => Promise<void>;
+  removeFromCart: (productId: number) => Promise<void>;
+  updateQuantity: (productId: number, newQuantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  clearError: () => void;
 }
 
-export const useCartStore = create<CartState>()(
-  // The 'persist' middleware saves the cart state to localStorage,
-  // so the cart is not lost when the user refreshes the page.
-  persist(
-    (set, get) => ({
-      items: [],
+export const useCartStore = create<CartState>((set, get) => ({
+  items: [],
+  isLoading: false,
+  error: null,
 
-      // Action to add a product to the cart
-      addToCart: (product) => {
-        const cart = get().items;
-        const findProduct = cart.find((p) => p.id === product.id);
+  clearError: () => set({ error: null }),
 
-        if (findProduct) {
-          // If product already exists, just increase its quantity
-          findProduct.quantity += 1;
-        } else {
-          // Otherwise, add the new product to the cart with quantity 1
-          cart.push({ ...product, quantity: 1 });
-        }
-        set({ items: [...cart] });
-      },
-
-      // Action to completely remove a product from the cart
-      removeFromCart: (productId) => {
-        set({ items: get().items.filter((item) => item.id !== productId) });
-      },
-
-      // Action to update the quantity of a specific product
-      updateQuantity: (productId, quantity) => {
-        if (quantity <= 0) {
-          // If quantity is 0 or less, remove the item
-          get().removeFromCart(productId);
-        } else {
-          set({
-            items: get().items.map((item) =>
-              item.id === productId ? { ...item, quantity } : item
-            ),
-          });
-        }
-      },
-
-      // Action to empty the entire cart
-      clearCart: () => {
-        set({ items: [] });
-      },
+  loadCart: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const { data: { user } } = await supabase.auth.getUser();
       
-      // Getter to calculate the total number of items in the cart
-      getTotalItems: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      // Getter to calculate the total price of all items in the cart
-      getTotalPrice: () => {
-        const total = get().items.reduce((total, item) => total + item.price * item.quantity, 0);
-        // Return the total formatted to 2 decimal places
-        return parseFloat(total.toFixed(2));
+      if (user) {
+        const dbItems = await fetchDBCart(user.id);
+        set({ items: dbItems, isLoading: false });
+      } else {
+        set({ items: [], isLoading: false });
       }
-    }),
-    {
-      name: 'shopping-cart-storage', // unique name for the localStorage key
+    } catch (error: any) {
+      console.error('Error loading cart:', error);
+      set({ 
+        error: 'Failed to load cart. Please refresh and try again.', 
+        isLoading: false 
+      });
     }
-  )
-);
+  },
+
+  addToCart: async (product, quantityToAdd = 1) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        set({ error: 'Please log in to add items to cart' });
+        return;
+      }
+
+      set({ isLoading: true, error: null });
+      
+      const items = get().items;
+      const existingItem = items.find(item => item.id === product.id);
+      const newQuantity = existingItem ? existingItem.quantity + quantityToAdd : quantityToAdd;
+      
+      // Validate quantity limits
+      if (newQuantity > 10) {
+        set({ 
+          error: 'Maximum quantity of 10 per item allowed',
+          isLoading: false 
+        });
+        return;
+      }
+      
+      await upsertDBCartItem({ userId: user.id, productId: product.id, quantity: newQuantity });
+      await get().loadCart(); // Re-sync state from DB
+      
+    } catch (error: any) {
+      console.error('Error adding to cart:', error);
+      set({ 
+        error: 'Failed to add item to cart. Please try again.',
+        isLoading: false 
+      });
+    }
+  },
+
+  removeFromCart: async (productId) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      set({ isLoading: true, error: null });
+      await removeDBCartItem({ userId: user.id, productId });
+      await get().loadCart(); // Re-sync state from DB
+      
+    } catch (error: any) {
+      console.error('Error removing from cart:', error);
+      set({ 
+        error: 'Failed to remove item from cart. Please try again.',
+        isLoading: false 
+      });
+    }
+  },
+
+  updateQuantity: async (productId, newQuantity) => {
+    try {
+      if (newQuantity <= 0) {
+        await get().removeFromCart(productId);
+        return;
+      }
+      
+      // Validate quantity limits
+      if (newQuantity > 10) {
+        set({ error: 'Maximum quantity of 10 per item allowed' });
+        return;
+      }
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      set({ isLoading: true, error: null });
+      await upsertDBCartItem({ userId: user.id, productId, quantity: newQuantity });
+      await get().loadCart(); // Re-sync state from DB
+      
+    } catch (error: any) {
+      console.error('Error updating quantity:', error);
+      set({ 
+        error: 'Failed to update quantity. Please try again.',
+        isLoading: false 
+      });
+    }
+  },
+
+  clearCart: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        await clearDBCart(user.id);
+      }
+      set({ items: [], isLoading: false });
+      
+    } catch (error: any) {
+      console.error('Error clearing cart:', error);
+      set({ 
+        error: 'Failed to clear cart. Please try again.',
+        isLoading: false 
+      });
+    }
+  },
+
+  getTotalItems: () => get().items.reduce((total, item) => total + item.quantity, 0),
+  getTotalPrice: () => get().items.reduce((total, item) => total + (item.price * item.quantity), 0),
+}));

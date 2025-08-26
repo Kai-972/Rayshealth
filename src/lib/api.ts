@@ -12,6 +12,43 @@ interface ProductFilters {
   perPage?: number;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  image_url: string | null;
+  price: number;
+  // Add any other product fields you need
+}
+
+// --- Profile Functions ---
+
+// Fetch the logged-in user's profile
+export const fetchProfile = async (userId: string) => {
+  if (!userId) return null;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+// Update the logged-in user's profile
+export const updateProfile = async ({ userId, updates }: { userId: string, updates: any }) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select() // Use .select() to return the updated data
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+
+// --- Filters ---
+
 export const fetchFilterCategories = async () => {
   const { data, error } = await supabase.from('categories').select('id, name');
   if (error) throw new Error(error.message);
@@ -23,6 +60,8 @@ export const fetchFilterBrands = async () => {
     if (error) throw new Error(error.message);
     return data;
 };
+
+// --- Products ---
 
 export const fetchProducts = async (filters: ProductFilters) => {
   console.log("🚀 [API Request] Fetching products with filters:", filters);
@@ -38,7 +77,6 @@ export const fetchProducts = async (filters: ProductFilters) => {
     perPage = 12,
   } = filters;
 
-  // --- FIXED: Handle many-to-many category filtering ---
   let productIdsFromCategoryFilter: number[] | null = null;
 
   if (categories.length > 0) {
@@ -157,4 +195,101 @@ export const fetchRelatedProducts = async (categoryId: number | undefined, curre
     return [];
   }
   return data;
+};
+
+// --- Wishlist Functions ---
+
+// Fetch all wishlist items for a user, along with the full product details
+export const fetchWishlist = async (userId: string): Promise<Product[]> => {
+  if (!userId) return [];
+
+  const { data, error } = await supabase
+    .from('wishlist_items')
+    .select(`
+      products (
+        *,
+        brands ( name )
+      )
+    `)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error("Error fetching wishlist:", error);
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    return [];
+  }
+
+  // FIXED: The result from Supabase is [{ products: { id: 1, ... } }].
+  // We need to extract the 'products' object from each item.
+  const products = data
+    .map(item => item.products)
+    .filter(Boolean);
+
+  // If products is an array of arrays, flatten it
+  const flatProducts = Array.isArray(products[0]) ? products.flat() : products;
+
+  return flatProducts as Product[];
+};
+
+// Add an item to the wishlist
+export const addToWishlist = async ({ userId, productId }: { userId: string, productId: number }) => {
+  const { data, error } = await supabase
+    .from('wishlist_items')
+    .insert({ user_id: userId, product_id: productId });
+  // We'll ignore duplicate errors (code 23505) as they are expected
+  if (error && error.code !== '23505') throw new Error(error.message);
+  return data;
+};
+
+// Remove an item from the wishlist
+export const removeFromWishlist = async ({ userId, productId }: { userId: string, productId: number }) => {
+  const { data, error } = await supabase
+    .from('wishlist_items')
+    .delete()
+    .match({ user_id: userId, product_id: productId });
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+// --- DB Cart Functions ---
+
+export const fetchDBCart = async (userId: string) => {
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('cart_items')
+    .select('*, products(*, brands(name))')
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+  // Transform the data to match the cart item shape
+  return data.map(item => ({ ...item.products, quantity: item.quantity }));
+};
+
+export const upsertDBCartItem = async ({ userId, productId, quantity }: { userId: string, productId: number, quantity: number }) => {
+  const { data, error } = await supabase
+    .from('cart_items')
+    .upsert({ user_id: userId, product_id: productId, quantity: quantity })
+    .select();
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const removeDBCartItem = async ({ userId, productId }: { userId: string, productId: number }) => {
+  const { data, error } = await supabase
+    .from('cart_items')
+    .delete()
+    .match({ user_id: userId, product_id: productId });
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const clearDBCart = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('user_id', userId);
+    if (error) throw new Error(error.message);
+    return data;
 };

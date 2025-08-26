@@ -25,49 +25,76 @@ import TestimonialPage from "./pages/Testimonials";
 import IrishMossKnowMore from "./components/homepage/headerComponents/IrishMossKnowMore";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ProfilePage from "./pages/account/ProfilePage";
+import WishlistPage from "./pages/account/WishlistPage";
+import { useEffect } from "react";
+import { useCartStore } from "./stores/cartStore";
+import { supabase } from "./lib/supabaseClient";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blogpage2" element={<BlogPage2 />} />
-          <Route path="/blogpage3" element={<BlogPage3 />} />
-          <Route path="/blogpage4" element={<BlogPage4 />} />
-          <Route path="/blogpage5" element={<BlogPage5 />} />
+const App = () => {
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const store = useCartStore.getState();
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        if (session) {
+          store.loadCart(); // Load the user's cart from the DB
+        }
+      } else if (event === 'SIGNED_OUT') {
+        store.clearCart(); // Clear the cart on logout
+      }
+    });
 
-          <Route element={<ProtectedRoute />}>
+    // Cleanup the listener when the app unmounts
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blogpage2" element={<BlogPage2 />} />
+            <Route path="/blogpage3" element={<BlogPage3 />} />
+            <Route path="/blogpage4" element={<BlogPage4 />} />
+            <Route path="/blogpage5" element={<BlogPage5 />} />
             <Route path="/products" element={<Products />} />
             <Route path="/product/:productId" element={<ProductDetailPage />} />
-          </Route>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/testimonials" element={<TestimonialPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/testimonials" element={<TestimonialPage />} />
 
-          {/* Header Components */}
-          <Route path="/irish-moss/know-more" element={<IrishMossKnowMore />} />
+            {/* Header Components */}
+            <Route path="/irish-moss/know-more" element={<IrishMossKnowMore />} />
 
-          {/* Blog Pages */}
-          <Route path="/the-ultimate-guide-to-natural-cardiovascular-wellness-beyond-supplements" element={<BP11 />} />
-          <Route path="/unlocking-the-hidden-benefits-of-superfoods-for-heart-health" element={<BP12 />} />
-          <Route path="/10-astonishing-vitamin-e-supplement-benefits/" element={<BP13 />} />
-          <Route path="/healthy-foods-with-high-cholesterol-consume-them-in-limited-quantities/" element={<BP14 />} />
-          <Route path="/a-comprehensive-list-of-7-supplements-to-improve-circulation/" element={<BP15 />} />
-          <Route path="/try-these-7-supplements-that-are-good-for-liver/" element={<BP16 />} />
-          <Route path="/a-comprehensive-analysis-on-the-health-benefits-of-dietary-supplements/" element={<BP17 />} />
+            {/* Blog Pages */}
+            <Route path="/the-ultimate-guide-to-natural-cardiovascular-wellness-beyond-supplements" element={<BP11 />} />
+            <Route path="/unlocking-the-hidden-benefits-of-superfoods-for-heart-health" element={<BP12 />} />
+            <Route path="/10-astonishing-vitamin-e-supplement-benefits/" element={<BP13 />} />
+            <Route path="/healthy-foods-with-high-cholesterol-consume-them-in-limited-quantities/" element={<BP14 />} />
+            <Route path="/a-comprehensive-list-of-7-supplements-to-improve-circulation/" element={<BP15 />} />
+            <Route path="/try-these-7-supplements-that-are-good-for-liver/" element={<BP16 />} />
+            <Route path="/a-comprehensive-analysis-on-the-health-benefits-of-dietary-supplements/" element={<BP17 />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/account/profile" element={<ProfilePage />} />
+              <Route path="/account/wishlist" element={<WishlistPage />} />
+            </Route>
 
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 export default App;

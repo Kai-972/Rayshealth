@@ -3,7 +3,12 @@ import { useState, useEffect } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchProducts, fetchFilterCategories, fetchFilterBrands } from '@/lib/api';
 import { useCartStore } from '@/stores/cartStore';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '@/hooks/useUser';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { addToWishlist, removeFromWishlist } from '@/lib/api';
+import { supabase } from '@/lib/supabaseClient';
+import { useToast } from "@/components/ui/use-toast";
 
 // Import UI Components
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,35 +17,52 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Search, ChevronDown, ChevronRight, SlidersHorizontal, Plus, Minus  } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, SlidersHorizontal, Plus, Minus, Heart } from 'lucide-react';
 
 interface FilterItem { id: string; name: string; }
 
 const ProductCard = ({ product }) => {
     const { items, addToCart, updateQuantity } = useCartStore();
+    const { toast } = useToast();
+    const navigate = useNavigate();
     const itemInCart = items.find(item => item.id === product.id);
+    const queryClient = useQueryClient();
+    const { user } = useUser(); // Use the hook to get the user
+    const userId = user?.id;
+
+    const handleAddToCart = () => {
+        if (!user) {
+            toast({
+                title: "Please Log In",
+                description: "You need to be logged in to add items to your cart.",
+                variant: "destructive",
+                action: <Button onClick={() => navigate('/login')}>Login</Button>,
+            });
+            return;
+        }
+        addToCart(product);
+    };
 
     return (
         <article className="rounded-lg border border-neutral-200 bg-white hover:shadow-md transition group overflow-hidden flex flex-col">
-            <Link to={`/product/${product.id}`} className="flex flex-col flex-grow">
-                <div className="relative mx-auto mt-6 h-40 w-40">
-                    <img src={product.image_url || "/placeholder.png"} alt={product.name} className="h-full w-full object-contain" />
-                </div>
-                <div className="px-4 pt-4 flex-grow">
-                    <p className="text-xs text-neutral-500 uppercase tracking-wide">{product.brands?.name}</p>
-                    <h3 className="text-sm font-semibold leading-snug hover:text-orange-600 mt-1">{product.name}</h3>
-                    <div className="mt-2 text-sm font-semibold">${product.price}</div>
-                </div>
+            <Link to={`/product/${product.id}`}>
+                <img src={product.image_url || "/placeholder.png"} alt={product.name} className="h-48 w-full object-contain p-4" />
             </Link>
+            <div className="px-4 pt-2 flex-grow flex flex-col">
+                <p className="text-xs text-neutral-500 uppercase tracking-wide">{product.brands?.name}</p>
+                <h3 className="text-sm font-semibold leading-snug mt-1 flex-grow">{product.name}</h3>
+                <div className="mt-2 text-sm font-semibold">${product.price}</div>
+            </div>
             <div className="px-4 py-4 mt-auto">
-                {itemInCart ? (
+                {itemInCart && user ? (
+                    // Show quantity counter only if item is in cart AND user is logged in
                     <div className="flex items-center justify-center gap-2">
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(itemInCart.id, itemInCart.quantity - 1)}><Minus className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(itemInCart.id, itemInCart.quantity - 1)}>-</Button>
                         <span className="text-lg font-semibold w-10 text-center">{itemInCart.quantity}</span>
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(itemInCart.id, itemInCart.quantity + 1)}><Plus className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(itemInCart.id, itemInCart.quantity + 1)}>+</Button>
                     </div>
                 ) : (
-                    <Button className="w-full rounded-full bg-orange-500 text-sm font-semibold text-white hover:bg-orange-600 transition" onClick={() => addToCart(product)}>
+                    <Button className="w-full rounded-full bg-orange-500 text-sm font-semibold text-white hover:bg-orange-600 transition" onClick={handleAddToCart}>
                         Add to cart
                     </Button>
                 )}

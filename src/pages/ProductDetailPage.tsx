@@ -1,17 +1,19 @@
 // src/pages/ProductDetailPage.tsx
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { fetchProductById, fetchRelatedProducts } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchProductById, fetchRelatedProducts, addToWishlist, removeFromWishlist, fetchWishlist } from '@/lib/api';
 import { useCartStore } from '@/stores/cartStore';
 import { supabase } from '@/lib/supabaseClient';
 import Header from '@/components/homepage/Header';
 import Footer from '@/components/homepage/Footer';
+import { useUser } from '@/hooks/useUser';
+import { useToast } from "@/components/ui/use-toast";
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Minus, Loader2 } from 'lucide-react';
+import { Plus, Minus, Loader2, Heart } from 'lucide-react';
 import { useState } from 'react';
 
 // Reusable Card for the Related Products section
@@ -39,18 +41,52 @@ const RelatedProductCard = ({ product }) => {
 export default function ProductDetailPage() {
     // Get the 'productId' from the URL (e.g., /product/14)
     const { productId } = useParams<{ productId: string }>();
+    const { user } = useUser();
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
     const { items, addToCart, updateQuantity } = useCartStore();
     const [quantity, setQuantity] = useState(1);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
 
+    // Fetch the main product
     const { data: product, isLoading, error } = useQuery({
         queryKey: ['product', productId],
         queryFn: () => fetchProductById(productId!),
         enabled: !!productId,
     });
 
-    // Extract the category from the new data structure
+    // Fetch the user's wishlist to check if this product is in it
+    const { data: wishlist } = useQuery({
+        queryKey: ['wishlist', user?.id],
+        queryFn: () => fetchWishlist(user!.id),
+        enabled: !!user,
+    });
+
+    const isWishlisted = wishlist?.some(p => p.id === product?.id);
+
+    // Mutations for adding/removing from wishlist
+    const addWishlistMutation = useMutation({
+        mutationFn: () => addToWishlist({ userId: user!.id, productId: product!.id }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wishlist', user!.id] }),
+    });
+    const removeWishlistMutation = useMutation({
+        mutationFn: () => removeFromWishlist({ userId: user!.id, productId: product!.id }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wishlist', user!.id] }),
+    });
+
+    const handleWishlistToggle = () => {
+        if (!user) {
+            toast({ title: "Please log in to use the wishlist.", variant: "destructive" });
+            return;
+        }
+        if (isWishlisted) {
+            removeWishlistMutation.mutate();
+        } else {
+            addWishlistMutation.mutate();
+        }
+    };
+
     const category = product?.product_categories?.[0]?.categories;
 
     const { data: relatedProducts } = useQuery({
@@ -61,7 +97,31 @@ export default function ProductDetailPage() {
 
     const itemInCart = items.find(item => item.id === product?.id);
 
+    const handleAddToCart = () => {
+        if (!user) {
+            toast({
+                title: "Please Log In",
+                description: "You need to be logged in to add items to your cart.",
+                variant: "destructive",
+                action: <Button onClick={() => navigate('/login')}>Login</Button>,
+            });
+            return;
+        }
+        for (let i = 0; i < quantity; i++) {
+            addToCart(product);
+        }
+    };
+
     const handleBuyNow = async () => {
+        if (!user) {
+            toast({
+                title: "Please Log In",
+                description: "You need to be logged in to check out.",
+                variant: "destructive",
+                action: <Button onClick={() => navigate('/login')}>Login</Button>,
+            });
+            return;
+        }
         if (!product) return;
         setIsCheckingOut(true);
 
@@ -76,17 +136,10 @@ export default function ProductDetailPage() {
         }];
 
         try {
-             navigate("/cart");
+            navigate("/cart");
         } catch (err) {
             console.error("Buy Now Error:", err);
             setIsCheckingOut(false);
-        }
-    };
-
-    const handleAddToCart = () => {
-        // The cart store's addToCart handles quantity logic internally
-        for (let i = 0; i < quantity; i++) {
-            addToCart(product);
         }
     };
 
@@ -157,6 +210,15 @@ export default function ProductDetailPage() {
                                 <Button size="lg" variant="secondary" className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBuyNow} disabled={isCheckingOut || !product.shopify_variant_id}>
                                     {isCheckingOut ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                     Buy Now
+                                </Button>
+                                <Button
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-12 w-12"
+                                    onClick={handleWishlistToggle}
+                                    disabled={addWishlistMutation.isPending || removeWishlistMutation.isPending}
+                                >
+                                    <Heart className={`h-6 w-6 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
                                 </Button>
                             </div>
                         )}
