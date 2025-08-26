@@ -107,9 +107,11 @@ export default function ProductDetailPage() {
             });
             return;
         }
-        for (let i = 0; i < quantity; i++) {
-            addToCart(product);
+        if (!itemInCart) {
+            addToCart(product, quantity);
         }
+        //updateQuantity( Number(productId), quantity);
+        return ;
     };
 
     const handleBuyNow = async () => {
@@ -127,7 +129,7 @@ export default function ProductDetailPage() {
 
         // Ensure the item is in the cart before checking out
         if (!itemInCart) {
-            addToCart(product);
+            addToCart(product, quantity);
         }
 
         const lineItems = [{

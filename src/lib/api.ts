@@ -56,9 +56,9 @@ export const fetchFilterCategories = async () => {
 };
 
 export const fetchFilterBrands = async () => {
-    const { data, error } = await supabase.from('brands').select('id, name');
-    if (error) throw new Error(error.message);
-    return data;
+  const { data, error } = await supabase.from('brands').select('id, name');
+  if (error) throw new Error(error.message);
+  return data;
 };
 
 // --- Products ---
@@ -89,14 +89,14 @@ export const fetchProducts = async (filters: ProductFilters) => {
       console.error("❌ [API Response] Supabase error fetching category links:", categoryError);
       throw new Error(categoryError.message);
     }
-    
+
     // Get a unique list of product IDs from the join table
     productIdsFromCategoryFilter = [...new Set(categoryLinks.map(link => link.product_id))];
 
     // If no products match the category, we can stop here and return empty.
     if (productIdsFromCategoryFilter.length === 0) {
-        console.log("✅ [API Response] No products found for selected categories.");
-        return { products: [], count: 0 };
+      console.log("✅ [API Response] No products found for selected categories.");
+      return { products: [], count: 0 };
     }
   }
 
@@ -189,7 +189,7 @@ export const fetchRelatedProducts = async (categoryId: number | undefined, curre
     .from('products')
     .select(`*, brands ( name )`)
     .in('id', productIds);
-  
+
   if (error) {
     console.error("Error fetching related products:", error);
     return [];
@@ -270,8 +270,12 @@ export const fetchDBCart = async (userId: string) => {
 export const upsertDBCartItem = async ({ userId, productId, quantity }: { userId: string, productId: number, quantity: number }) => {
   const { data, error } = await supabase
     .from('cart_items')
-    .upsert({ user_id: userId, product_id: productId, quantity: quantity })
+    .upsert(
+      { user_id: userId, product_id: productId, quantity },
+      { onConflict: 'user_id,product_id' }
+    )
     .select();
+
   if (error) throw new Error(error.message);
   return data;
 };
@@ -286,10 +290,10 @@ export const removeDBCartItem = async ({ userId, productId }: { userId: string, 
 };
 
 export const clearDBCart = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('user_id', userId);
-    if (error) throw new Error(error.message);
-    return data;
+  const { data, error } = await supabase
+    .from('cart_items')
+    .delete()
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+  return data;
 };
