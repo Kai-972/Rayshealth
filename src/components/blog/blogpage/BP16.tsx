@@ -5,11 +5,11 @@ import CommentSection from '../Comment';
 import { FaFacebookF, FaLinkedinIn, FaRedditAlien, FaPinterestP, FaTumblr, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
-function Bp15() {
+function Bp16() {
   const shareUrl =
     "https://rayshealthyliving.com/try-these-7-supplements-that-are-good-for-liver/";
   const shareTitle =
-    "TTry These 7 Supplements That Are Good for Liver";
+    "Try These 7 Supplements That Are Good for Liver";
 
   const popup = (href) => {
     if (typeof window === "undefined") return;
@@ -242,4 +242,4 @@ function Bp15() {
     </>
   );
 }
-export default Bp15;
+export default Bp16;
