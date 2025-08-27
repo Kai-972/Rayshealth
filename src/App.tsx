@@ -18,6 +18,7 @@ import BP14 from "./components/blog/blogpage/BP14";
 import BP15 from "./components/blog/blogpage/BP15";
 import BP16 from "./components/blog/blogpage/BP16";
 import BP17 from "./components/blog/blogpage/BP17";
+import BP18 from "./components/blog/blogpage/BP18"
 import Products from "./pages/Products";
 import LoginPage from "./pages/auth/Login";
 import CartPage from "./pages/Cart";
@@ -32,6 +33,7 @@ import WishlistPage from "./pages/account/WishlistPage";
 import { useEffect } from "react";
 import { useCartStore } from "./stores/cartStore";
 import { supabase } from "./lib/supabaseClient";
+import Bp18 from "./components/blog/blogpage/BP18";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +88,7 @@ const App = () => {
             <Route path="/a-comprehensive-list-of-7-supplements-to-improve-circulation/" element={<BP15 />} />
             <Route path="/try-these-7-supplements-that-are-good-for-liver/" element={<BP16 />} />
             <Route path="/a-comprehensive-analysis-on-the-health-benefits-of-dietary-supplements/" element={<BP17 />} />
+            <Route path="/6-amazing-vitamin-d-supplement-benefits-you-must-be-aware-of/" element={<Bp18/>}/>
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
