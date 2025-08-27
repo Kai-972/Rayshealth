@@ -289,6 +289,7 @@ const Header = () => {
 
       {/* BOOK A HEALTH CONSULTANT */}
       <div className="fixed right-0 top-1/2 -translate-y-[80%] z-50">
+      <a href="/consultation">
         <Button
           className="bg-black hover:bg-orange-500 text-white rounded-r-none rounded-l-lg
                leading-none tracking-tight whitespace-pre-line
@@ -297,10 +298,12 @@ const Header = () => {
         >
           BOOK A HEALTH CONSULTANT
         </Button>
+        </a>
       </div>
 
       {/* FEEDBACK */}
       <div className="fixed right-0 top-2/3 -translate-y-[10%] z-50">
+      <a href="/contact">
         <Button
           className="bg-green-600 hover:bg-orange-500 text-white rounded-r-none rounded-l-lg
                leading-none tracking-tight whitespace-pre-line
@@ -309,6 +312,7 @@ const Header = () => {
         >
           FEEDBACK
         </Button>
+        </a>
       </div>
     </header>
   );
