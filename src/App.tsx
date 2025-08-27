@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
+import ContactPage from "./components/homepage/Contact";
 import BlogPage2 from "./components/blog/BlogPage2";
 import BlogPage3 from "./components/blog/BlogPage3";
 import BlogPage4 from "./components/blog/BlogPage4";
@@ -66,6 +67,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/contact" element={<ContactPage/>} />
             <Route path="/blogpage2" element={<BlogPage2 />} />
             <Route path="/blogpage3" element={<BlogPage3 />} />
             <Route path="/blogpage4" element={<BlogPage4 />} />
