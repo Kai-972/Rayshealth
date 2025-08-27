@@ -5,7 +5,7 @@ import CommentSection from '../Comment';
 import { FaFacebookF, FaLinkedinIn, FaRedditAlien, FaPinterestP, FaTumblr, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
-function Bp15() {
+function Bp17() {
   const shareUrl =
     "https://rayshealthyliving.com/a-comprehensive-analysis-on-the-health-benefits-of-dietary-supplements/";
   const shareTitle =
@@ -252,4 +252,5 @@ function Bp15() {
     </>
   );
 }
-export default Bp15;
+export default Bp17;
+
