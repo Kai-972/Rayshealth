@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import ContactPage from "./components/homepage/Contact";
+import ConsultationSection from "./components/ConsultationSection";
 import BlogPage2 from "./components/blog/BlogPage2";
 import BlogPage3 from "./components/blog/BlogPage3";
 import BlogPage4 from "./components/blog/BlogPage4";
@@ -76,6 +77,7 @@ const App = () => {
             <Route path="/product/:productId" element={<ProductDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/testimonials" element={<TestimonialPage />} />
+            <Route path="/consultation" element={<ConsultationSection/>} />
 
             {/* Header Components */}
             <Route path="/irish-moss/know-more" element={<IrishMossKnowMore />} />
