@@ -102,7 +102,7 @@ const blogs: BlogItem[] = [
     category: " Healthy Living, Vitamin D supplement benefits",
     image:
     "/blog/b8.jpg",  
-    href: "6-amazing-vitamin-d-supplement-benefits-you-must-be-aware-of/",
+    href: "/6-amazing-vitamin-d-supplement-benefits-you-must-be-aware-of/",
   },
   {
     id: "b9",
