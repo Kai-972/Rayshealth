@@ -83,12 +83,14 @@ const HeroSection = () => {
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 350, damping: 20 }}
               >
+                <a href="/products">
                 <Button
                   size="lg"
                   className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-br-[20px] rounded-tl-[20px]"
                 >
                   SHOP NOW
                 </Button>
+                </a>
               </motion.div>
 
               <motion.div
@@ -96,12 +98,14 @@ const HeroSection = () => {
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 350, damping: 20 }}
               >
+                <a href="/about">
                 <Button
                   size="lg"
                   className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-br-[20px] rounded-tl-[20px]"
                 >
                   ABOUT US
                 </Button>
+                </a>
               </motion.div>
             </motion.div>
           </motion.div>
