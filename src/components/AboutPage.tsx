@@ -232,9 +232,9 @@ const AboutPage: React.FC = () => {
 
           <div className="flex justify-center">
             <img
-              src="/images/website-laptop.png"
+              src="/about-laptop.png"
               alt="Ray’s Healthy Living website on a laptop"
-              className="w-full max-w-[720px] h-auto object-contain drop-shadow-xl"
+              className="w-full max-w-[720px] h-auto object-contain rounded-xl drop-shadow-xl"
               loading="lazy"
             />
           </div>
