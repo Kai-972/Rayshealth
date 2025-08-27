@@ -95,25 +95,25 @@ const blogs: BlogItem[] = [
   },
   {
     id: "b8",
-    title: "Energy & Vitality: Daily Foundations",
+    title: "6 Amazing Vitamin D Supplement Benefits You Must Be Aware of",
     excerpt:
-      "Learn how steady routines, hydration, and targeted nutrients help sustain healthy energy all day.",
-    date: "Sep 9, 2019",
-    category: "Energy",
+      "Vitamin D, also known as the ‘Sunshine Vitamin’, is produced by the skin when it comes in contact with Sunlight.",
+    date: "November 6, 2019",
+    category: " Healthy Living, Vitamin D supplement benefits",
     image:
-      "https://images.unsplash.com/photo-1514511547904-70d83b8ae2d1?q=80&w=1200&auto=format&fit=crop",
-    href: "/blog/energy-vitality-foundations",
+    "/blog/b8.jpg",  
+    href: "6-amazing-vitamin-d-supplement-benefits-you-must-be-aware-of/",
   },
   {
     id: "b9",
-    title: "Children’s Health: Gentle Support",
+    title: "6 Key Supplements for a Vegan Diet (Updated for 2019)",
     excerpt:
-      "Evidence-informed approaches to bolster kids’ immune and cognitive development with gentle support.",
-    date: "Aug 30, 2019",
-    category: "Children's Health",
+      "A vegan diet is often low in nutrients. Vitamin B-12 – an essential nutrient, is absent in this type of diet and...",
+    date: "October 23, 2019",
+    category: " Healthy Living, Supplements for a vegan diet",
     image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1200&auto=format&fit=crop",
-    href: "/blog/childrens-health-gentle-support",
+      "/blog/b9.jpg",
+    href:  "/6-key-supplements-for-a-vegan-diet-updated-for-2019",
   },
 ];
 
