@@ -147,34 +147,34 @@ const Header = () => {
           <ul className="flex items-center justify-evenly py-3 text-sm font-medium">
             {/* Irish Moss */}
             <li className="relative group">
-              <a href="/irish-moss" className="hover:text-green-200 flex items-center">
+              <a href="/#" className="hover:text-green-200 flex items-center">
                 IRISH MOSS
                 <ChevronDown className="w-4 h-4 ml-1" />
               </a>
               <div className="absolute left-0 mt-2 w-48 bg-green-600 text-white shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <ul>
                   <li><a href="/irish-moss/know-more" className="block px-4 py-2 hover:bg-orange-500">Know More</a></li>
-                  <li><a href="/irish-moss/shop-now" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
+                  <li><a href="/#" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
                 </ul>
               </div>
             </li>
 
             {/* CBD */}
             <li className="relative group">
-              <a href="/cbd" className="hover:text-green-200 flex items-center">
+              <a href="/#" className="hover:text-green-200 flex items-center">
                 CBD
                 <ChevronDown className="w-4 h-4 ml-1" />
               </a>
               <div className="absolute left-0 mt-2 w-48 bg-green-600 text-white shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <ul>
                   <li><a href="/cbd/know-more" className="block px-4 py-2 hover:bg-orange-500">Know More</a></li>
-                  <li><a href="/cbd/shop-now" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
+                  <li><a href="/#" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
                 </ul>
               </div>
             </li>
 
             {/* Health Concern */}
-            <li><a href="/health-concern" className="hover:text-green-200">Health Concern</a></li>
+            <li><a href="/#" className="hover:text-green-200">Health Concern</a></li>
 
             {/* Brands */}
             <li className="relative group">
@@ -199,7 +199,7 @@ const Header = () => {
                   ].map((brand, idx) => (
                     <li key={idx}>
                       <a
-                        href={`/brands/${brand.toLowerCase().replace(/\s+/g, "-")}`}
+                        href={`/products`}
                         className="block px-4 py-2 hover:bg-orange-500"
                       >
                         {brand}
@@ -251,38 +251,38 @@ const Header = () => {
 
             {/* Maximum Cardio */}
             <li className="relative group">
-              <a href="/maximum-cardio" className="hover:text-green-200 flex items-center">
+              <a href="/#" className="hover:text-green-200 flex items-center">
                 Maximum Cardio
                 <ChevronDown className="w-4 h-4 ml-1" />
               </a>
               <div className="absolute left-0 mt-2 w-56 bg-green-600 text-white shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <ul>
-                  <li><a href="/maximum-cardio/shop-now" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
-                  <li><a href="/maximum-cardio/know-more" className="block px-4 py-2 hover:bg-orange-500">Know More</a></li>
-                  <li><a href="/maximum-cardio/video" className="block px-4 py-2 hover:bg-orange-500">Video</a></li>
+                  <li><a href="/#" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
+                  <li><a href="/#" className="block px-4 py-2 hover:bg-orange-500">Know More</a></li>
+                  <li><a href="/#" className="block px-4 py-2 hover:bg-orange-500">Video</a></li>
                 </ul>
               </div>
             </li>
 
             {/* Essential Oil */}
             <li className="relative group">
-              <a href="/essential-oil" className="hover:text-green-200 flex items-center">
+              <a href="/#" className="hover:text-green-200 flex items-center">
                 Essential Oil
                 <ChevronDown className="w-4 h-4 ml-1" />
               </a>
               <div className="absolute left-0 mt-2 w-56 bg-green-600 text-white shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <ul>
-                  <li><a href="/essential-oil/shop-now" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
+                  <li><a href="/#" className="block px-4 py-2 hover:bg-orange-500">Shop Now</a></li>
                   <li><a href="/essential-oil/know-more" className="block px-4 py-2 hover:bg-orange-500">Know More</a></li>
                 </ul>
               </div>
             </li>
 
             {/* Others */}
-            <li><a href="/others" className="hover:text-green-200">Others</a></li>
+            <li><a href="/products" className="hover:text-green-200">Others</a></li>
 
             {/* Ray's Vitality */}
-            <li><a href="/vitality" className="hover:text-green-200">Ray&apos;s Vitality</a></li>
+            <li><a href="/products" className="hover:text-green-200">Ray&apos;s Vitality</a></li>
           </ul>
         </div>
       </nav>
