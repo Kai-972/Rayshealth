@@ -23,6 +23,8 @@ import LoginPage from "./pages/auth/Login";
 import CartPage from "./pages/Cart";
 import TestimonialPage from "./pages/Testimonials";
 import IrishMossKnowMore from "./components/homepage/headerComponents/IrishMossKnowMore";
+import CBDKnowMore from "./components/homepage/headerComponents/CBDKnowMore";
+import EssentialOil from "./components/homepage/headerComponents/EssentialOil";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ProfilePage from "./pages/account/ProfilePage";
@@ -73,6 +75,8 @@ const App = () => {
 
             {/* Header Components */}
             <Route path="/irish-moss/know-more" element={<IrishMossKnowMore />} />
+            <Route path="/cbd/know-more" element={<CBDKnowMore/>} />
+            <Route path="/essential-oil/know-more" element={<EssentialOil/>}/>
 
             {/* Blog Pages */}
             <Route path="/the-ultimate-guide-to-natural-cardiovascular-wellness-beyond-supplements" element={<BP11 />} />
